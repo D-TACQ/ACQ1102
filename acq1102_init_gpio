@@ -10,89 +10,109 @@ exit 0
 # i2c gpio
 
 CHIP122=$(get_gpiochip 1 0022)
-let GPIO_MB1=${CHIP122#gpiochip*}
-let GPIO_MB2=$GPIO_MB1+23
+let GPIO_1220=${CHIP122#gpiochip*}
+let GPIO_1221=$GPIO_1220+23
 
 CHIP123=$(get_gpiochip 1 0023)
-let GPIO_XX1=${CHIP123#gpiochip*}
-let GPIO_XX2=$GPIO_XX1+23
-let GPIO_XXO2=$GPIO_XX1+15
+let GPIO_1230=${CHIP123#gpiochip*}
+let GPIO_1231=$GPIO_XX1+23
 
 
-for pin in $(seq $GPIO_MB1 $GPIO_MB2) $(seq $GPIO_XX1 $GPIO_XX2)
+mkdir -p /dev/gpio/CHIP1
+let pin=$GPIO_1220
+let ix=0
+#        P000102030405060710111213141516172021222324252627
+for dir in O O I I I I O O O O O O O O O O O O O O O I O O
 do
 	export_gpio $pin
+
+	ln -s /sys/class/gpio/gpio$pin /dev/gpio/CHIP122/$(printf P%02o $ix)
+	direction=in; [ "$dir" = "O" ] && direction=out
+	echo $direction > gpio$pin/direction
+	let pin=$pin+1
+	let ix=$ix+1
 done
 
 
-
-
-for pin in $(seq $GPIO_MB1 $GPIO_MB2) $(seq $GPIO_XX1 $GPIO_XXO2)  
+mkdir -p /dev/gpio/CHIP2
+let pin=$GPIO_1230
+let ix=0
+#        P000102030405060710111213141516172021222324252627
+for dir in I I I I I I O O O O O O O O O O O O I I I I I I
 do
-	setO gpio$pin
+	export_gpio $pin
+	ln -s /sys/class/gpio/gpio$pin /dev/gpio/CHIP123/$(printf P%02o $ix)
+	direction=in; [ "$dir" = "O" ] && direction=out
+	echo $direction > gpio$pin/direction
+	let pin=$pin+1
+	let ix=$ix+1
 done
 
 
-mkdir -p /dev/gpio/CLK/MB/RDW
-let MBX=$GPIO_MB1
-mkln gpio$MBX CLK/MB/RDW/R6; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/RDW/R5; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/RDW/R4; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/RDW/R3; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/RDW/R2; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/RDW/R1; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/RDW/R0; let MBX=$MBX+1
+mkdir -p /dev/gpio/LED /dev/gpio/CLK /dev/gpio/MGT/SFP1 /dev/gpio/MGT/SFP2
 
-mkdir /dev/gpio/CLK/MB/FDW
-mkln gpio$MBX CLK/MB/FDW/F6; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/FDW/F5; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/FDW/F4; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/FDW/F3; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/FDW/F2; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/FDW/F1; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/FDW/F0; let MBX=$MBX+1
+lnAH	/dev/gpio/CHIP122/P00	/dev/gpio/CLK/OE_CLK1_ELF1
+lnAH	/dev/gpio/CHIP122/P01	/dev/gpio/CLK/OE_CLK1_ELF2
 
-mkdir /dev/gpio/CLK/MB/ODW
-mkln gpio$MBX CLK/MB/ODW/S1; let MBX=$MBX+1
-mkln gpio$MBX CLK/MB/ODW/S0; let MBX=$MBX+1
+lnAH	/dev/gpio/CHIP122/P02	/dev/gpio/MGT/SFP1/RATE_0
+lnAH	/dev/gpio/CHIP122/P03	/dev/gpio/MGT/SFP1/RATE_1
+lnAH	/dev/gpio/CHIP122/P04	/dev/gpio/MGT/SFP2/RATE_0
+lnAH	/dev/gpio/CHIP122/P05	/dev/gpio/MGT/SFP2/RATE_1
+
+lnALO	/dev/gpio/CHIP122/P06	/dev/gpio/LED/FMC1_G
+lnALO	/dev/gpio/CHIP122/P07	/dev/gpio/LED/FMC1_R
+
+lnALO	/dev/gpio/CHIP122/P10	/dev/gpio/LED/SFP1_G
+lnALO	/dev/gpio/CHIP122/P11	/dev/gpio/LED/SFP1_R
+lnALO	/dev/gpio/CHIP122/P12	/dev/gpio/LED/SFP2_G
+lnALO	/dev/gpio/CHIP122/P13	/dev/gpio/LED/SFP2_R
+
+lnALO	/dev/gpio/CHIP122/P14	/dev/gpio/LED/CLK_G
+lnALO	/dev/gpio/CHIP122/P15	/dev/gpio/LED/CLK_R
+
+lnALO	/dev/gpio/CHIP122/P16	/dev/gpio/CLK/OE_CLK1_ZYNQ
+lnALO	/dev/gpio/CHIP122/P17	/dev/gpio/CLK/OE_CLK1_HDMI
+
+lnAH	/dev/gpio/CHIP122/P20	/dev/gpio/FAN_EN
+lnAH 	/dev/gpio/CHIP122/P21 	/dev/gpio/FP_SYNC_DIR_OUT
+lnAH 	/dev/gpio/CHIP122/P22 	/dev/gpio/FP_IO_DIR_OUT
+lnAH 	/dev/gpio/CHIP122/P23 	/dev/gpio/SYNC_IN_GPIO_OUT
+lnAH 	/dev/gpio/CHIP122/P24 	/dev/gpio/SYNC_OUT_GPIO_OUT
+lnAL 	/dev/gpio/CHIP122/P25 	/dev/gpio/SYNC_CABLE_DET
+
+lnALO 	/dev/gpio/CHIP122/P26 	/dev/gpio/MGT/SFP1/TX_DISABLE
+lnALO 	/dev/gpio/CHIP122/P27 	/dev/gpio/MGT/SFP2/TX_DISABLE
 
 
-gpioXXX() {
-	let lgp=$GPIO_XX1+$1
-	echo gpio$lgp
-}
 
+lnAL	/dev/gpio/CHIP123/P00	/dev/gpio/fmc1_present
+lnAL	/dev/gpio/CHIP123/P01	/dev/gpio/fmc2_present
 
-mkdir -p /dev/gpio/LED
-mkln $(gpioXXX  0) LED/FMC1_G 	AL
-mkln $(gpioXXX  1) LED/FMC1_R 	AL
-mkln $(gpioXXX  2) LED/CLK_G 		AL
-mkln $(gpioXXX  3) LED/CLK_R 		AL
-mkln $(gpioXXX  4) LED/TRG_G 		AL
-mkln $(gpioXXX  5) LED/TRG_R 		AL
+lnAL	/dev/gpio/CHIP123/P02	/dev/gpio/MGT/SFP1/PRESENT
+lnAL	/dev/gpio/CHIP123/P03	/dev/gpio/MGT/SFP2/PRESENT
 
-mkln $(gpioXXX  6) CLK/SYNC_SET_OUT	
-mkln $(gpioXXX  7) CLK/SYNC_SET_IN     
-mkln $(gpioXXX  8) CLK/MB/ICS_CLK2_OE
-mkln $(gpioXXX  9) CLK/OSC_X_OE 	AL
-mkln $(gpioXXX 10) CLK/OSC_X_CLK_OE	AL
-mkln $(gpioXXX 11) CLK/FP_CLK_OE 	AL
-mkln $(gpioXXX 12) CLK/FP_OE		AL
-mkln $(gpioXXX 13) 15VA_EN			AL
-mkln $(gpioXXX 14) CLK/Si570_OE
-mkln $(gpioXXX 15) CLK/ZCLK_OE		AL
+lnAH	/dev/gpio/CHIP123/P04	/dev/gpio/MGT/SFP1/TX_FAULT
+lnAH	/dev/gpio/CHIP123/P05	/dev/gpio/MGT/SFP2/TX_FAULT
 
-echo ZCLK DISABLE
-set.sys /dev/gpio/CLK/ZCLK_OE 0
+lnALO	/dev/gpio/CHIP123/P06	/dev/gpio/LED/FMC2_G
+lnALO	/dev/gpio/CHIP123/P07	/dev/gpio/LED/FMC2_R
 
-mkln $(gpioXXX 16) fmc1_present		AL
-mkln $(gpioXXX 17) fmc2_present		AL
-mkln $(gpioXXX 18) celf_prsnt		AL
-mkln $(gpioXXX 19) mcvt_prsnt		AL
-mkln $(gpioXXX 20) BV_FMC
-mkln $(gpioXXX 21) BV2
-mkln $(gpioXXX 22) BV3
-mkln $(gpioXXX 23) BV4 
+lnALO	/dev/gpio/CHIP123/P10	/dev/gpio/CLK/ZCLK_OE
+lnALO	/dev/gpio/CHIP123/P11	/dev/gpio/CLK/DIST_CLK_HDMI  # Not CLK1
+lnALO	/dev/gpio/CHIP123/P12	/dev/gpio/CLK/OSC_X_OE
+lnALO	/dev/gpio/CHIP123/P13	/dev/gpio/CLK/OSC_X_CLK_OE
+lnALO	/dev/gpio/CHIP123/P14	/dev/gpio/CLK/FP_CLK_OE
+lnALO	/dev/gpio/CHIP123/P15	/dev/gpio/CLK/FP_OE
+lnALO	/dev/gpio/CHIP123/P16	/dev/gpio/CLK/Si570_OE
+lnALO	/dev/gpio/CHIP123/P17	/dev/gpio/15VA_EN
+
+lnALO	/dev/gpio/CHIP123/P20	/dev/gpio/LED/TRG_G
+lnALO	/dev/gpio/CHIP123/P21	/dev/gpio/LED/TRG_R
+
+ln		/dev/gpio/CHIP123/P24	/dev/gpio/BV1
+ln		/dev/gpio/CHIP123/P25	/dev/gpio/BV2
+ln		/dev/gpio/CHIP123/P26	/dev/gpio/BV3
+ln		/dev/gpio/CHIP123/P27	/dev/gpio/BV4
 
 echo HDMI sync setting /dev/gpio/CLK/SYNC_SET_IN as INPUT 0
 set.sys /dev/gpio/CLK/SYNC_SET_IN 0
