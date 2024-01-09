@@ -15,7 +15,7 @@ let GPIO_1230=${CHIP123#gpiochip*}
 let GPIO_1231=$GPIO_XX1+23
 
 
-mkdir -p /dev/gpio/CHIP1
+mkdir -p /dev/gpio/CHIP122
 let pin=$GPIO_1220
 let ix=0
 #        P000102030405060710111213141516172021222324252627
@@ -31,7 +31,7 @@ do
 done
 
 
-mkdir -p /dev/gpio/CHIP2
+mkdir -p /dev/gpio/CHIP123
 let pin=$GPIO_1230
 let ix=0
 #        P000102030405060710111213141516172021222324252627
@@ -116,6 +116,7 @@ set.sys /dev/gpio/CLK/SYNC_SET_IN 0
 echo HDMI sync setting /dev/gpio/CLK/SYNC_SET_OUT as OUTPUT 1
 set.sys /dev/gpio/CLK/SYNC_SET_OUT 1
 
+/sbin/insmod /usr/local/lib/modules/si5326.ko
 	
 common_end
 
