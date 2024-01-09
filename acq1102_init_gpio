@@ -4,9 +4,6 @@ source /usr/local/bin/acq400_init_gpio_common.sh
 
 common_begin
 
-echo ++ ACQ1102 GPIO WORKTODO STUB
-exit 0
-
 # i2c gpio
 
 CHIP122=$(get_gpiochip 1 0022)
