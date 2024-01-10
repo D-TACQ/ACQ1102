@@ -1,0 +1,171 @@
+#!/bin/sh
+
+OLD=xxxx
+
+avago_monitor() {
+	hexdump -e '16/1 "%3d " "\n"' $1 | awk '
+	{ 
+        FMT="%10s:%7.2f %s\n";
+        if (NR==1+(96/16)) { 
+                printf(FMT, "Temp", ($1*256+$2)/256, "C");
+                printf(FMT, "VCC", ($3*256+$4)/10000.0, "V");
+                printf(FMT, "Tx Bias", ($5*256+$6)/2, "uA");
+                printf(FMT, "Tx Power", ($7*256+$8)*0.1, "uW");
+                printf(FMT, "Rx Pwr", ($9*256+$10)*0.1, "uW");
+         } 
+	}'
+}
+
+set_led() {
+	SFP=$1; 
+	red=0
+	grn=0
+	case $2 in
+	G)	grn=1;;
+	R)	red=1;;
+	*)	;;
+	esac
+	if [ -e /dev/gpio/LED/MGT${SFP}_G ]; then
+		echo $grn > /dev/gpio/LED/MGT${SFP}_G
+		echo $red > /dev/gpio/LED/MGT${SFP}_R
+	else
+		/usr/bin/logger -t sfp-scan "ERROR /dev/gpio/LED/MGT${SFP}_G"
+	fi
+}
+
+do_one_sfp() {
+	file=$1 verbose=$2
+	ppp=$(dirname $file)
+	SFP=$(basename $ppp)
+	SFPN=${SFP#SFP}
+	let bus=$bus0+$SFPN
+	eeprom=/sys/class/i2c-dev/i2c-$bus/device/$bus-0050/eeprom
+	ddm=/sys/class/i2c-dev/i2c-$bus/device/$bus-0051/eeprom
+	[ $verbose -ne 0 ] && echo SFP $SFPN present
+	[ $verbose -gt 1 ] && echo SFP $SFPN eeprom:$eeprom ddm:$ddm
+	mgt=/dev/MGT482/$SFP
+	mkdir -p $mgt
+	if [ ! -e $mgt/init ]; then
+		cat $eeprom > $mgt/eeprom
+		sfp_decode $mgt/eeprom > $mgt/sid
+		cat $ddm 2>&1 > $mgt/ddm
+		if [ "x$(cat $mgt/ddm)" = "x" ]; then
+			echo ddm fail >$mgt/init
+			rm $mgt/ddm
+		else
+			echo OK > $mgt/init
+			set_led $SFPN G
+			[ $verbose -ne 0 ] && echo "sfp $SFPN G"
+		fi
+	else
+		[ -e $mgt/ddm ] && cat $ddm > $mgt/ddm
+	fi
+	[ $verbose -ne 0 ] && hexdump -C $mgt/eeprom
+	if [ -e $mgt/ddm ]; then
+		avago_monitor $mgt/ddm >$mgt/actuals
+		[ $verbose -ne 0 ] && cat $mgt/actuals
+	fi		
+}
+
+on_sfp_removed() {
+	port=$1
+	dir=$2
+	set_led $port R
+	rm -Rf $dir
+	[ $3 -ne 0 ] && echo "on_sfp_removed $port"
+}
+
+
+load_overlay() {
+    grep -q configfs /proc/mounts || mount -t configfs none /sys/kernel/config
+    odir=/sys/kernel/config/device-tree/overlays/sfp$1
+    if [ ! -e $odir ]; then
+        mkdir -p $odir
+        cat /mnt/dtb.d/acq1102_sfp${1}_overlay.dtb > $odir/dtbo
+    fi
+}
+do_sfp_scan() {
+	verbose=$1
+	bus0=8
+
+	mkdir -p /dev/MGT482
+
+	[ -e /dev/MGT482/init ] && OLD="$(cat /dev/MGT482/init)"
+# force full update first time or changed config
+	NEW="$(cat /dev/gpio/MGT/SFP?/PRESENT)"
+	if [ "x$OLD" != "x$NEW" ]; then
+		echo SFP change detected \"$OLD\" \"$NEW\"
+		rm -f /dev/MGT482/init
+		sfp=1
+		for present in $NEW; do
+		    [ $present -eq 1 ] && load_overlay $sfp
+			mkdir -p /dev/MGT482/SFP$sfp
+			echo $present > /dev/MGT482/SFP$sfp/PRESENT
+			sfp=$(($sfp+1))
+		done
+	fi
+
+	for port in 1 2; do
+		dir=/dev/MGT482/SFP${port}
+		file=${dir}/PRESENT
+		init=${dir}/init
+#		echo do_sfp_scan dir:$dir file:$file init:$init
+		[ -e $file ] && [ $(cat $file) -eq 1 ] && do_one_sfp $file $verbose
+		[ -e $file ] && [ $(cat $file) -eq 0 ] && [ -e $init ] && on_sfp_removed $port $dir $verbose
+	done
+
+	echo "$NEW" > /dev/MGT482/init
+}
+
+create_c2r2() {
+	cat >/dev/shm/c2r2 - <<EOF
+        <pageFormat>
+                <noCols>2</noCols>
+                <colItems>2</colItems>
+        </pageFormat>	
+EOF
+}
+
+make_xml_data() {
+	[ -e /dev/shm/c2r2 ] || create_c2r2
+	# force row/column order
+	spec="fs2xml -s /dev/shm/c2r2 -p" 
+	for sfp in 1 2
+	do
+		
+		file=/dev/gpio/MGT/SFP$sfp/PRESENT
+		mgt=/dev/MGT482/SFP$sfp
+		if [ -e $file ] && [ $(cat $file) -eq 1 ]; then
+			ok=$(cat $mgt/actuals)
+			if [ "x$ok" = "x" ]; then
+				spec="$spec SFP$sfp 'cat $mgt/sid'"
+			else
+				spec="$spec SFP$sfp 'cat $mgt/sid $mgt/actuals'"
+			fi
+		else
+			spec="$spec SFP$sfp 'echo not present'"
+		fi 
+	done
+	echo "$spec" > /tmp/spec.txt
+	eval $spec > /dev/shm/sfp.xml
+}
+
+case $1 in
+monitor)
+	rm -Rf /dev/MGT482
+	for p in 1 2 3 4; do 
+		set_led $p 0; 
+	done
+
+	while [ 1 ]; do
+		do_sfp_scan ${2:-0}
+		make_xml_data
+		sleep 2
+	done
+	exit 0;;
+silent)
+	do_sfp_scan 0;;
+*)
+	do_sfp_scan 1;;
+esac
+
