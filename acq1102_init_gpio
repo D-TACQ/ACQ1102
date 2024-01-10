@@ -77,8 +77,8 @@ lnAH 	/dev/gpio/CHIP122/P23 	/dev/gpio/SYNC_IN_GPIO_OUT
 lnAH 	/dev/gpio/CHIP122/P24 	/dev/gpio/SYNC_OUT_GPIO_OUT
 lnAL 	/dev/gpio/CHIP122/P25 	/dev/gpio/SYNC_CABLE_DET
 
-lnALO 	/dev/gpio/CHIP122/P26 	/dev/gpio/MGT/SFP1/TX_DISABLE
-lnALO 	/dev/gpio/CHIP122/P27 	/dev/gpio/MGT/SFP2/TX_DISABLE
+lnAH 	/dev/gpio/CHIP122/P26 	/dev/gpio/MGT/SFP1/TX_DISABLE
+lnAH 	/dev/gpio/CHIP122/P27 	/dev/gpio/MGT/SFP2/TX_DISABLE
 
 
 
@@ -105,6 +105,9 @@ lnALO	/dev/gpio/CHIP123/P17	/dev/gpio/15VA_EN
 
 lnALO	/dev/gpio/CHIP123/P20	/dev/gpio/LED/TRG_G
 lnALO	/dev/gpio/CHIP123/P21	/dev/gpio/LED/TRG_R
+
+lnAH 	/dev/gpio/CHIP123/P22	/dev/gpio/MGT/SFP1/LOS
+lnAH 	/dev/gpio/CHIP123/P23	/dev/gpio/MGT/SFP2/LOS
 
 ln		/dev/gpio/CHIP123/P24	/dev/gpio/BV1
 ln		/dev/gpio/CHIP123/P25	/dev/gpio/BV2
