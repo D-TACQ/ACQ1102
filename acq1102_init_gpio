@@ -4,6 +4,15 @@ source /usr/local/bin/acq400_init_gpio_common.sh
 
 common_begin
 
+
+# si5326
+mkdir -p /dev/gpio/CLK
+zgpio0=$(get_zynq_gpio0)
+export_gpio_value_ln $(($zgpio0+11)) /dev/gpio/CLK/LOL
+export_gpio_value_ln $(($zgpio0+14)) /dev/gpio/CLK/C1B
+export_gpio_value_ln $(($zgpio0+15)) /dev/gpio/CLK/C2B
+
+
 # i2c gpio
 
 CHIP122=$(get_gpiochip 1 0022)
@@ -67,7 +76,7 @@ lnALO	/dev/gpio/CHIP122/P13	/dev/gpio/LED/SFP2_R
 lnALO	/dev/gpio/CHIP122/P14	/dev/gpio/LED/CLK_G
 lnALO	/dev/gpio/CHIP122/P15	/dev/gpio/LED/CLK_R
 
-lnALO	/dev/gpio/CHIP122/P16	/dev/gpio/CLK/OE_CLK1_ZYNQ
+lnAH	/dev/gpio/CHIP122/P16	/dev/gpio/CLK/OE_CLK1_ZYNQ
 lnALO	/dev/gpio/CHIP122/P17	/dev/gpio/CLK/OE_CLK1_HDMI
 
 lnAH	/dev/gpio/CHIP122/P20	/dev/gpio/FAN_EN
@@ -95,12 +104,14 @@ lnALO	/dev/gpio/CHIP123/P06	/dev/gpio/LED/FMC2_G
 lnALO	/dev/gpio/CHIP123/P07	/dev/gpio/LED/FMC2_R
 
 lnALO	/dev/gpio/CHIP123/P10	/dev/gpio/CLK/ZCLK_OE
-lnALO	/dev/gpio/CHIP123/P11	/dev/gpio/CLK/DIST_CLK_HDMI  # Not CLK1
+lnAH	/dev/gpio/CHIP123/P11	/dev/gpio/CLK/DIST_CLK_HDMI  # Not CLK1
 lnALO	/dev/gpio/CHIP123/P12	/dev/gpio/CLK/OSC_X_OE
 lnALO	/dev/gpio/CHIP123/P13	/dev/gpio/CLK/OSC_X_CLK_OE
 lnALO	/dev/gpio/CHIP123/P14	/dev/gpio/CLK/FP_CLK_OE
 lnALO	/dev/gpio/CHIP123/P15	/dev/gpio/CLK/FP_OE
 lnALO	/dev/gpio/CHIP123/P16	/dev/gpio/CLK/Si570_OE
+
+
 
 
 lnALO	/dev/gpio/CHIP123/P20	/dev/gpio/LED/TRG_G
@@ -131,10 +142,10 @@ echo 2 > /dev/acq2006/vap
 echo 2 > /dev/acq2006/van
 
 echo +++ now set 15VA_EN direction out
-echo out > /dev/gpio/CHIP2/P17/direction
-echo 0 > /dev/gpio/15VA_EN
-lnALO	/dev/gpio/CHIP123/P17	/dev/gpio/15VA_EN
+[ -e dev/gpio/15VA_EN ] && (echo WARNING: deleting pre-existing 15VA_EN; rm dev/gpio/15VA_EN)
+lnALO   /dev/gpio/CHIP123/P17   /dev/gpio/15VA_EN
 
+ln -s /dev/gpio/MGT /dev/gpio/MGT482
 
 common_end
 

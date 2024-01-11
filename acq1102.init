@@ -23,3 +23,8 @@ ln -s /dev/shm/si5326_step_state /etc/acq400/0/
 load.si5326 si5326_1-1_bypass.txt
 
 nice daemon /usr/local/bin/sfpmon
+
+cat - >>/etc/inetd.conf <<EOF
+4291 stream tcp nowait root sfp-svc sfp-svc SFP1
+4292 stream tcp nowait root sfp-svc sfp-svc SFP2
+EOF

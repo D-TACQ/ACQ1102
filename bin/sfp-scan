@@ -86,7 +86,7 @@ load_overlay() {
 }
 do_sfp_scan() {
 	verbose=$1
-	bus0=8
+	bus0=3      # SFP1 at bus 4
 
 	mkdir -p /dev/MGT482
 
