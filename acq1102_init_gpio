@@ -84,6 +84,7 @@ lnAH 	/dev/gpio/CHIP122/P21 	/dev/gpio/FP_SYNC_DIR_OUT
 lnAH 	/dev/gpio/CHIP122/P22 	/dev/gpio/FP_IO_DIR_OUT
 lnAH 	/dev/gpio/CHIP122/P23 	/dev/gpio/SYNC_IN_GPIO_OUT
 lnAH 	/dev/gpio/CHIP122/P24 	/dev/gpio/SYNC_OUT_GPIO_OUT
+setHI   /dev/gpio/CHIP122/P24                                   # Set high for Sync Bus Output GPIO to be an  Output (default)
 lnAL 	/dev/gpio/CHIP122/P25 	/dev/gpio/SYNC_CABLE_DET
 
 lnAH 	/dev/gpio/CHIP122/P26 	/dev/gpio/MGT/SFP1/TX_DISABLE
