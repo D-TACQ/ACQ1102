@@ -25,9 +25,9 @@ set_led() {
 	R)	red=1;;
 	*)	;;
 	esac
-	if [ -e /dev/gpio/LED/MGT${SFP}_G ]; then
-		echo $grn > /dev/gpio/LED/MGT${SFP}_G
-		echo $red > /dev/gpio/LED/MGT${SFP}_R
+	if [ -e /dev/gpio/LED/SFP${SFP}_G ]; then
+		echo $grn > /dev/gpio/LED/SFP${SFP}_G
+		echo $red > /dev/gpio/LED/SFP${SFP}_R
 	else
 		/usr/bin/logger -t sfp-scan "ERROR /dev/gpio/LED/MGT${SFP}_G"
 	fi
@@ -43,7 +43,7 @@ do_one_sfp() {
 	ddm=/sys/class/i2c-dev/i2c-$bus/device/$bus-0051/eeprom
 	[ $verbose -ne 0 ] && echo SFP $SFPN present
 	[ $verbose -gt 1 ] && echo SFP $SFPN eeprom:$eeprom ddm:$ddm
-	mgt=/dev/MGT482/$SFP
+	mgt=/dev/MGT/$SFP
 	mkdir -p $mgt
 	if [ ! -e $mgt/init ]; then
 		cat $eeprom > $mgt/eeprom
@@ -82,25 +82,25 @@ do_sfp_scan() {
 	verbose=$1
 	bus0=3      # SFP1 at bus 4
 
-	mkdir -p /dev/MGT482
+	mkdir -p /dev/MGT
 
-	[ -e /dev/MGT482/init ] && OLD="$(cat /dev/MGT482/init)"
+	[ -e /dev/MGT/init ] && OLD="$(cat /dev/MGT/init)"
 # force full update first time or changed config
 	NEW="$(cat /dev/gpio/MGT/SFP?/PRESENT)"
 	if [ "x$OLD" != "x$NEW" ]; then
 		echo SFP change detected \"$OLD\" \"$NEW\"
-		rm -f /dev/MGT482/init
+		rm -f /dev/MGT/init
 		sfp=1
 		for present in $NEW; do
 		    [ $present -eq 1 ] && load_overlay acq1102_sfp${sfp}_overlay
-			mkdir -p /dev/MGT482/SFP$sfp
-			echo $present > /dev/MGT482/SFP$sfp/PRESENT
+			mkdir -p /dev/MGT/SFP$sfp
+			echo $present > /dev/MGT/SFP$sfp/PRESENT
 			sfp=$(($sfp+1))
 		done
 	fi
 
 	for port in 1 2; do
-		dir=/dev/MGT482/SFP${port}
+		dir=/dev/MGT/SFP${port}
 		file=${dir}/PRESENT
 		init=${dir}/init
 #		echo do_sfp_scan dir:$dir file:$file init:$init
@@ -108,7 +108,7 @@ do_sfp_scan() {
 		[ -e $file ] && [ $(cat $file) -eq 0 ] && [ -e $init ] && on_sfp_removed $port $dir $verbose
 	done
 
-	echo "$NEW" > /dev/MGT482/init
+	echo "$NEW" > /dev/MGT/init
 }
 
 create_c2r2() {
@@ -128,7 +128,7 @@ make_xml_data() {
 	do
 		
 		file=/dev/gpio/MGT/SFP$sfp/PRESENT
-		mgt=/dev/MGT482/SFP$sfp
+		mgt=/dev/MGT/SFP$sfp
 		if [ -e $file ] && [ $(cat $file) -eq 1 ]; then
 			ok=$(cat $mgt/actuals)
 			if [ "x$ok" = "x" ]; then
@@ -146,7 +146,7 @@ make_xml_data() {
 
 case $1 in
 monitor)
-	rm -Rf /dev/MGT482
+	rm -Rf /dev/MGT
 	for p in 1 2 3 4; do 
 		set_led $p 0; 
 	done

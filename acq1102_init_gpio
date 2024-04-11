@@ -149,8 +149,6 @@ echo +++ now set 15VA_EN direction out
 [ -e dev/gpio/15VA_EN ] && (echo WARNING: deleting pre-existing 15VA_EN; rm dev/gpio/15VA_EN)
 lnALO   /dev/gpio/CHIP123/P17   /dev/gpio/15VA_EN
 
-ln -s /dev/gpio/MGT /dev/gpio/MGT482
-
 common_end
 
 echo "++ acq1001_init_gpio done"
