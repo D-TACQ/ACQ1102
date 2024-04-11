@@ -56,7 +56,8 @@ done
 
 
 mkdir -p /dev/gpio/LED /dev/gpio/CLK /dev/gpio/MGT/SFP1 /dev/gpio/MGT/SFP2
-
+# @todo .. compatibility link for acq400ioc
+ln -s /dev/gpio/MGT /dev/gpio/MGT482
 lnAH	/dev/gpio/CHIP122/P00	/dev/gpio/CLK/OE_CLK1_ELF1
 lnAH	/dev/gpio/CHIP122/P01	/dev/gpio/CLK/OE_CLK1_ELF2
 
