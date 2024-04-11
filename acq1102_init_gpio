@@ -80,6 +80,9 @@ lnAH	/dev/gpio/CHIP122/P16	/dev/gpio/CLK/OE_CLK1_ZYNQ
 lnALO	/dev/gpio/CHIP122/P17	/dev/gpio/CLK/OE_CLK1_HDMI
 
 lnAH	/dev/gpio/CHIP122/P20	/dev/gpio/FAN_EN
+
+echo 1 > /dev/gpio/FAN_EN
+
 lnAH 	/dev/gpio/CHIP122/P21 	/dev/gpio/FP_SYNC_DIR_OUT
 lnAH 	/dev/gpio/CHIP122/P22 	/dev/gpio/FP_IO_DIR_OUT
 lnAH 	/dev/gpio/CHIP122/P23 	/dev/gpio/SYNC_IN_GPIO_OUT
