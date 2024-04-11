@@ -2,9 +2,9 @@
 
 /usr/local/bin/acq1102_init_gpio
 
-echo ++ FAKE MGT482
-mkdir -p /etc/acq400/C
-echo 90 > /etc/acq400/C/MTYPE
+#echo ++ FAKE MGT482
+#mkdir -p /etc/acq400/C
+#echo 90 > /etc/acq400/C/MTYPE
 
 FMC_SCAN_FPGA=ACQ1102 FMC_SCAN_SITES="1 2 C" /usr/local/bin/fmc-scan
 
