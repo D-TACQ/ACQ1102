@@ -8,7 +8,7 @@ if {$::argc > 0} {
 
 log_user 0
 
-set ACT /dev/MGT482/$SFP/actuals
+set ACT /dev/MGT/$SFP/actuals
 
 
 while { 1 } {
